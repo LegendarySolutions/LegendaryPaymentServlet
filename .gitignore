@@ -1,0 +1,15 @@
+#Gradle
+.gradle/
+build/
+#Idea
+.idea/
+*.iml
+*.ipr
+*.iws
+#Eclipse
+.classpath
+.project
+.settings/
+bin/
+test-output
+#Other

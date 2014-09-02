@@ -1,0 +1,22 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+dependencies {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-core:1.9.5'
+    testCompile 'org.assertj:assertj-core:1.6.1'
+    testCompile 'pl.pragmatists:JUnitParams:1.0.2'
+    testCompile 'com.googlecode.catch-exception:catch-exception:1.2.0'
+}
+
+sourceCompatibility = 1.8
+
+task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
+    gradleVersion = '1.12'
+}
