@@ -1,6 +1,18 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'war'
+apply plugin: 'tomcat'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.gradle.api.plugins:gradle-tomcat-plugin:1.2.4'
+    }
+}
 
 dependencies {
     repositories {
@@ -8,11 +20,20 @@ dependencies {
         mavenLocal()
     }
 
+    providedCompile 'javax.servlet:servlet-api:2.5'
+
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-core:1.9.5'
     testCompile 'org.assertj:assertj-core:1.6.1'
     testCompile 'pl.pragmatists:JUnitParams:1.0.2'
     testCompile 'com.googlecode.catch-exception:catch-exception:1.2.0'
+
+    def tomcatVersion = '7.0.55'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}"
+    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}") {
+        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
+    }
 }
 
 sourceCompatibility = 1.8
