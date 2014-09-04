@@ -21,22 +21,28 @@ public class PaymentServlet extends HttpServlet {
 
         System.out.println("Serving...");
 
-        String response = null;
+        String responseText = null;
 
         try {
             Class.forName("org.h2.Driver");
             Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost:9092//tmp/payments", "prod", "topsecret");
 
+            String id = req.getParameter("id");
+            String status = req.getParameter("status");
+
             Statement statement = conn.createStatement();
-            String paymentId = req.getParameter("id");
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM payments WHERE id = " + paymentId);
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM payments WHERE id = " + id);
 
             if (resultSet.next()) {
-                String status = resultSet.getString("status");
-                if (status.equals("PAID")) {
-                    response = "PAID";
+                String oldStatus = resultSet.getString("status");
+                if (oldStatus.equals(status)) {
+                    responseText = "THE SAME";
+                } else if (oldStatus.equals("NEW") && status.equals("PAID")) {
+                    responseText = "PAID";
+                } else if (oldStatus.equals("PAID") && status.equals("NEW")) {
+                    responseText = "ERROR";
                 } else {
-                    response = "ERROR";
+                    responseText = "ERROR";
                 }
             }
 
@@ -47,7 +53,7 @@ public class PaymentServlet extends HttpServlet {
         }
 
         PrintWriter writer = resp.getWriter();
-        writer.println(response);
+        writer.println(responseText);
         writer.close();
     }
 }
