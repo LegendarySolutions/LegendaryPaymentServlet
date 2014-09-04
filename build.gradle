@@ -22,6 +22,8 @@ dependencies {
 
     providedCompile 'javax.servlet:servlet-api:2.5'
 
+    compile 'com.h2database:h2:1.4.181'
+
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-core:1.9.5'
     testCompile 'org.assertj:assertj-core:1.6.1'
