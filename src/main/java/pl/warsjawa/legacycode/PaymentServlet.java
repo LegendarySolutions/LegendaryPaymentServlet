@@ -19,16 +19,17 @@ public class PaymentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        String response = null;
-
         System.out.println("Serving...");
+
+        String response = null;
 
         try {
             Class.forName("org.h2.Driver");
             Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost:9092//tmp/payments", "prod", "topsecret");
 
             Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM payments WHERE id = 2");
+            String paymentId = req.getParameter("id");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM payments WHERE id = " + paymentId);
 
             if (resultSet.next()) {
                 String status = resultSet.getString("status");
