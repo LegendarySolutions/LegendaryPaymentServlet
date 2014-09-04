@@ -10,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
+
 /**
  * <b>Legacy tool</b> to setup production like environment on the local workstation for <b>manual</b> "testing"
  * after deploy.
@@ -20,7 +22,7 @@ public class SetupProductionDB {
 
     public static void main(String[] args) throws SQLException, InterruptedException {
         Server.createTcpServer("-tcpAllowOthers").start();
-        Connection conn = DriverManager.getConnection("jdbc:h2:/tmp/payments", "prod", "topsecret");
+        Connection conn = DriverManager.getConnection(format("jdbc:h2:%s//payments", System.getProperty("java.io.tmpdir")), "prod", "topsecret");
         Server.createWebServer().start();
         InputStream initScriptStream = SetupProductionDB.class.getClassLoader().getResourceAsStream("initProdDB.sql");
         InputStreamReader initScriptReader = new InputStreamReader(initScriptStream);
