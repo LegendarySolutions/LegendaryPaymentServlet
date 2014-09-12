@@ -19,6 +19,9 @@ public class PaymentSerice {
             conn = getConnection();
             PreparedStatement statement = conn.prepareStatement("select * from TRANSACTION where PAYMENT_ID = ?");
             statement.setString(1, paymentId);
+            
+            System.out.println(statement);
+            
             ResultSet rs = statement.executeQuery();
 
             List<Transaction> result = new ArrayList<>();
@@ -53,7 +56,7 @@ public class PaymentSerice {
     private Transaction getTransactionFromResultSet(ResultSet rs) throws SQLException {
 
         Transaction transaction = new Transaction();
-        transaction.setId(rs.getLong("id"));
+        transaction.setId(rs.getString("id"));
         transaction.setActive(rs.getBoolean("active"));
         transaction.setContactEmail(rs.getString("contact_email"));
         transaction.setContactPerson(rs.getString("contact_person"));
@@ -61,7 +64,7 @@ public class PaymentSerice {
         return transaction;
     }
 
-    public Transaction findTransactionById(long transactionId) {
+    public Transaction findTransactionById(String orderId) {
 
         Connection conn = null;
 
@@ -69,10 +72,13 @@ public class PaymentSerice {
 
             conn = getConnection();
             PreparedStatement statement = conn.prepareStatement("select * from TRANSACTION where ID = ?");
-            statement.setLong(1, transactionId);
+            statement.setString(1, orderId);
+            
+            System.out.println(statement);
+            
             ResultSet rs = statement.executeQuery();
 
-            if (rs.next()) {
+            if (!rs.next()) {
                 return null;
             }
 
@@ -95,7 +101,11 @@ public class PaymentSerice {
             conn = getConnection();
             PreparedStatement statement = conn.prepareStatement("update TRANSACTION set ACTIVE=? where ID = ?");
             statement.setBoolean(1, false);
-            statement.setLong(2, transaction.getId());
+            statement.setString(2, transaction.getId());
+            
+            System.out.println(statement);
+
+            statement.execute();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -113,9 +123,12 @@ public class PaymentSerice {
             conn = getConnection();
             PreparedStatement statement = conn.prepareStatement("select * from PAYMENT where ID = ?");
             statement.setString(1, paymentId);
+            
+            System.out.println(statement);
+            
             ResultSet rs = statement.executeQuery();
 
-            if (rs.next()) {
+            if (!rs.next()) {
                 return null;
             }
 
@@ -149,6 +162,10 @@ public class PaymentSerice {
             statement.setString(1, payment.getState());
             statement.setInt(2, payment.getAmount());
             statement.setString(3, payment.getId());
+            
+            System.out.println(statement);
+            
+            statement.execute();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

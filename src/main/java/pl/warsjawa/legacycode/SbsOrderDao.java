@@ -34,6 +34,9 @@ public class SbsOrderDao {
             conn = getConnection();
             PreparedStatement stmt = conn.prepareStatement("select * from ORDERS where ID = ?");
             stmt.setString(1, orderId);
+            
+            System.out.println(stmt);
+            
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -90,6 +93,9 @@ public class SbsOrderDao {
                 stmt.setInt(3, order.getTotalPrice());
                 stmt.setString(4, order.getCustomerData().getEmail());
                 stmt.setString(5, order.getCustomerData().getFullName());
+                
+                System.out.println(insertSql);
+
                 stmt.execute();
                 
             } else {
@@ -102,6 +108,9 @@ public class SbsOrderDao {
                 stmt.setInt(2, order.getTotalPrice());
                 stmt.setString(3, order.getCustomerData().getEmail());
                 stmt.setString(4, order.getCustomerData().getFullName());
+
+                System.out.println(updateSql);
+                
                 stmt.execute();
 
             }

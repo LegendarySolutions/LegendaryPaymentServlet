@@ -15,6 +15,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +26,13 @@ public class PaymentServlet extends HttpServlet{
     private static final String secret = "15c84df6-bfa3-46c1-8929-a5dedaeab4a4";
 
     private PaymentSerice paymentService;
+    
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        
+        super.init(config);
+        paymentService = new PaymentSerice();
+    }
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -71,7 +79,7 @@ public class PaymentServlet extends HttpServlet{
             orderId = sbsMatcher.group(1); 
         }
         
-        Pattern transPattern = Pattern.compile(".*(\\d{5,7}S|K|G).*");
+        Pattern transPattern = Pattern.compile("^(\\d{5,7}S|K|G).*");
         Matcher transMatcher = transPattern.matcher(payload);
         if(transMatcher.matches()){
             isSBS = false;
@@ -130,7 +138,7 @@ public class PaymentServlet extends HttpServlet{
             
         } else {
             
-            Transaction transaction = paymentService.findTransactionById(Long.valueOf(orderId));
+            Transaction transaction = paymentService.findTransactionById(orderId);
             
             if(transaction == null || !transaction.isActive()){
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "No active transaction with transaction_id: " + orderId + "!");
