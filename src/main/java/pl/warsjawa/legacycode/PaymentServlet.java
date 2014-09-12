@@ -1,118 +1,178 @@
 package pl.warsjawa.legacycode;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.mail.Message;
+import javax.mail.Message.RecipientType;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-/**
- * Legacy servlet to handle changes in payments.
- * <p>
- * WARNING. This is legacy code for education purposes only. <b>DO NOT WRITE CODE LIKE THAT AT HOME!</br>
- */
-public class PaymentServlet extends HttpServlet {
+public class PaymentServlet extends HttpServlet{
 
-    //TODO: Change to POST - temporarily GET to make easier to call from a browser
+    private static final String secret = "15c84df6-bfa3-46c1-8929-a5dedaeab4a4";
+
+    private PaymentSerice paymentService;
+    
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        System.out.println("Serving...");
-
-        String responseText = null;
-
+        String amount = req.getParameter("amount");
+        String status = req.getParameter("status");     // OK | CANCELLED | EXPIRED
+        String payload = req.getParameter("payload");
+        String timestamp = req.getParameter("ts");
+        String md5 = req.getParameter("md5");           // md5(amount + status + payload + timestamp + secret)
+    
         try {
-            Class.forName("org.h2.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:h2:tcp://localhost:9092//tmp/payments", "prod", "topsecret");
-
-            String pDesc = req.getParameter("desc");
-            String pAmount = req.getParameter("amount");
-            String pStatus = req.getParameter("status");
-
-            if (pStatus.equals("OK")) {
-                Pattern orderPattern = Pattern.compile("Order: (\\d\\d\\d\\d\\d)");
-                Matcher matcher = orderPattern.matcher(pDesc);
-                if (matcher.matches()) {
-                    String orderId = matcher.group(1);
-                    System.out.println("Retrieved orderId: " + orderId);
-
-                    responseText = doIt(responseText, conn, pStatus, orderId, pAmount);
-                } else {
-                    orderPattern = Pattern.compile(".*(\\d\\d\\d\\d\\d).*");
-                    matcher = orderPattern.matcher(pDesc);
-                    if (matcher.matches()) {
-                        String orderId = matcher.group(1);
-                        System.out.println("Greedily retrieved orderId: " + orderId);
-
-                        responseText = doIt(responseText, conn, pStatus, orderId, pAmount);
-                    } else {
-                        System.out.println("Unrecognized payment description");
-                        responseText = "ERROR";
-                        //TODO: WORKSHOP: Send mail to admin
-                    }
-                }
-
-            } else {
-                System.out.println("Wrong status");
-                responseText = "ERROR";
+            
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(amount.getBytes());
+            digest.update(status.getBytes());
+            digest.update(payload.getBytes());
+            digest.update(timestamp.getBytes());
+            digest.update(secret.getBytes());
+            
+            String expectedMd5 = String.format("%032x", new BigInteger(1, digest.digest()));
+            System.out.println("Expected MD5: " + expectedMd5);
+            
+            if(!expectedMd5.equals(md5)){
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature did not match!");
+                return;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
+     
+        boolean isSBS = false; 
+        String orderId = null;
+        
+        Pattern sbsPattern = Pattern.compile(".*order_id:(\\d{4}).*");      
+        Matcher sbsMatcher = sbsPattern.matcher(payload);
+        if(sbsMatcher.matches()){
+            isSBS = true;
+            orderId = sbsMatcher.group(1); 
+        }
+        
+        Pattern transPattern = Pattern.compile(".*(\\d{5,7}S|K|G).*");
+        Matcher transMatcher = transPattern.matcher(payload);
+        if(transMatcher.matches()){
+            isSBS = false;
+            orderId = transMatcher.group(1);
+        }
+        
+        if(orderId == null){
+            
+            // Neither SBS nor Trans. Reject.
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unrecognized format of payload!");
+            return;
+        }
+        
+        if(isSBS){
+            
+            SbsOrderDao sbsDao = SbsOrderDao.getInstance();
+            Order order = sbsDao.findOrderById(orderId);
+            
+            if(order == null || !"PENDING".equals(order.getStatus())){
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "No pending oder with id: " + orderId + "!");
+                return;
+            }
+            
+            if(order.getTotalPrice() == Integer.parseInt(amount)){
+                
+                order.setStatus("PAID");
+                sbsDao.save(order);
 
-        PrintWriter writer = resp.getWriter();
-        writer.println(responseText);
-        writer.close();
+                String email = order.getCustomerData().getEmail();
+                
+                sendEmail(email, "Order #" + orderId + " has been successfully processed!", 
+                        "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n Thanks!");
+
+                
+            } else if(order.getTotalPrice() > Integer.parseInt(amount)) {
+                
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Not enough amount!");
+                return;
+                
+            } else {
+                
+                int surplus = Integer.parseInt(amount) - order.getTotalPrice();
+                order.setStatus("PAID");
+                sbsDao.save(order);
+                
+                // TODO: save surplus to customer account
+
+                String email = order.getCustomerData().getEmail();
+                
+                sendEmail(email, "Order #" + orderId + " has been successfully processed!", 
+                        "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n"
+                      + "We have registered surplus of " + surplus + "USD on your account.\n Thanks!");
+                
+                sendEmail("admin@oursystem.com", "Order #" + orderId + " has surplus of " + surplus, "");
+            }
+            
+        } else {
+            
+            Transaction transaction = paymentService.findTransactionById(Long.valueOf(orderId));
+            
+            if(transaction == null || !transaction.isActive()){
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "No active transaction with transaction_id: " + orderId + "!");
+                return;
+            }
+            
+            List<Transaction> transactions = paymentService.findTransactionsByPaymentId(transaction.getPaymentId());
+            
+            for (Transaction t : transactions) {
+                
+                // only one active transaction is allowed!
+                if(t.isActive() && t.getId() != transaction.getId()){
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Multiple active transactions detected for payment: " + transaction.getPaymentId() + "!");
+                    return;
+                }
+            }
+            
+            paymentService.setInactiveTransaction(transaction);
+            
+            Payment payment = paymentService.findPaymentById(transaction.getPaymentId());
+            payment.setState("COMPLETED");
+            paymentService.updatePayment(payment);
+            
+            sendEmail(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been successfully processed!", 
+                    "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been successfully processed!\n Thanks!");
+            
+        }
+        
+        resp.getOutputStream().print("OK");
     }
 
-    //TODO: WORKSHOP: Inline it to make it even worse (with some subtle modification in one branch to make refactoring harder)
-    private String doIt(String responseText, Connection conn, String pStatus, String orderId, String pAmount) throws SQLException {
-        Statement statement = conn.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM orders WHERE orderId = " + orderId);
-
-        if (resultSet.next()) {
-            String oldStatus = resultSet.getString("status");
-            if (oldStatus.equals("PAID")) {
-                System.out.println("Already paid. Ignoring.");
-                responseText = "ALREADY PAID";
-            } else if (oldStatus.equals("NEW") && pStatus.equals("OK")) {
-                if (new Integer(pAmount) == resultSet.getInt("amount")) {
-                    System.out.println("Paid");
-                    responseText = "PAID";
-                    Statement updateStatement = conn.createStatement();
-                    updateStatement.executeUpdate("UPDATE orders SET status = 'PAID' WHERE orderId = " + orderId);
-                    //TODO: WORKSHOP: Send email to user
-                } else if (new Integer(pAmount) < resultSet.getInt("amount")) {
-                    System.out.println("Not enough");
-                    responseText = "NOT ENOUGH";
-                    //TODO: WORKSHOP: Send email to user
-                } else {
-                    System.out.println("Paid with surplus");
-                    responseText = "PAID SURPLUS";
-                    Statement updateStatement = conn.createStatement();
-                    updateStatement.executeUpdate("UPDATE orders SET status = 'PAID' WHERE orderId = " + orderId);
-                    //TODO: WORKSHOP: Send email to user
-                    //TODO: Handle surplus manually
-                }
-            } else if (oldStatus.equals("CANCELLED") && pStatus.equals("OK")) {
-                System.out.println("Wrong transition error");
-                responseText = "ERROR";
-            } else {
-                System.out.println("Other error");
-                responseText = "ERROR";
-                //TODO: WORKSHOP: Send email to admin
-            }
-        } else {
-            System.out.println("Unknown order");
-            responseText = "ERROR";
-            //TODO: WORKSHOP: Send email to admin
+    private void sendEmail(String email, String subject, String body) {
+        
+        try {
+            
+            Session session = Session.getInstance(new Properties());
+            Message msg = new MimeMessage(session);
+            msg.setRecipient(RecipientType.TO, new InternetAddress(email));
+            msg.setSubject(subject);
+            msg.setText(body);
+            msg.saveChanges();
+            Transport transport = session.getTransport("smtp");
+            transport.connect("localhost", 9988, "", "");
+            transport.sendMessage(msg, msg.getAllRecipients());
+            
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return responseText;
     }
 }

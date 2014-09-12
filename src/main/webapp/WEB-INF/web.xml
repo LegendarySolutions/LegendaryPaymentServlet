@@ -10,7 +10,7 @@
 
     <servlet-mapping>
         <servlet-name>PaymentServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/payment</url-pattern>
     </servlet-mapping>
 
 </web-app>

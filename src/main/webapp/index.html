@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
+<script type="text/javascript">
+
+	var calculateMd5 = function(){
+		
+		var form = document.forms[0];
+		var text = form.amount.value + form.status.value + form.payload.value + form.ts.value + form.secret.value;
+		
+		console.log("Calculating MD5 for: '" +  text + "'");
+		form.md5.value = CryptoJS.MD5(text);
+	};
+
+</script>
+<body onload="document.forms[0].ts.value = new Date().getTime()">
+
+	<form action="/payment" method="POST">
+	
+		amount: <input name="amount" value="100"><br>
+		status: <input name="status" value="OK"><br>
+		payload: <textarea name="payload" rows="5" cols="60"></textarea><br>
+		ts: <input name="ts"><br>
+		secret: <input name="secret" value="15c84df6-bfa3-46c1-8929-a5dedaeab4a4"><br>
+		md5: <input name="md5"><button onclick="calculateMd5(); return false;">Calculate</button> <br>
+		
+		<input type="submit" value="Send!">
+	</form>
+
+</body>
+</html>
