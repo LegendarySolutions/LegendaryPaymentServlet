@@ -48,14 +48,19 @@ public class PaymentServlet extends HttpServlet{
             System.out.println("Expected MD5: " + expectedMd5);
             
             if(!expectedMd5.equals(md5)){
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature did not match!");
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
                 return;
             }
             
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-     
+
+        if(Math.abs(System.currentTimeMillis() - Long.valueOf(timestamp)) > 60000){
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Timestamp do not match!");
+            return;
+        }
+        
         boolean isSBS = false; 
         String orderId = null;
         

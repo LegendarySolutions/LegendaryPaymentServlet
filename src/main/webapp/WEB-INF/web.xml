@@ -8,9 +8,19 @@
         <servlet-class>pl.warsjawa.legacycode.PaymentServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>DebugServlet</servlet-name>
+        <servlet-class>pl.warsjawa.legacycode.DebugServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>PaymentServlet</servlet-name>
         <url-pattern>/payment</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>DebugServlet</servlet-name>
+        <url-pattern>/debug</url-pattern>
     </servlet-mapping>
 
 </web-app>
