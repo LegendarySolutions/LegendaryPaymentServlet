@@ -79,7 +79,7 @@ public class PaymentServlet extends HttpServlet{
             orderId = sbsMatcher.group(1); 
         }
         
-        Pattern transPattern = Pattern.compile("^(\\d{5,7}S|K|G).*");
+        Pattern transPattern = Pattern.compile("^(\\d{5,7}(S|K|G)).*");
         Matcher transMatcher = transPattern.matcher(payload);
         if(transMatcher.matches()){
             isSBS = false;

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
+<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
 	var calculateMd5 = function(){
@@ -13,19 +14,70 @@
 	};
 
 </script>
+<script>
+	
+	var print = function(){
+		
+		var data = arguments[0];
+		[].splice.call(arguments, 0, 1);
+		var columns = arguments;
+		
+		var table = $("<table border='1' cellpadding=5></table>");
+		$.each(columns, function(_, column){
+			table.append("<th>" + column + "</th>");
+		});
+		$.each(data, function(x, data){
+			
+			var row = $("<tr></tr>");
+			$.each(columns, function(_, column){
+				row.append("<td>" + data[column] + "</td>");
+			});
+
+			table.append(row);
+		});
+		$("#debug_data").append(table);
+	};
+	
+	$(document).ready(function(){
+		
+		$("#debug").click(function(){
+			
+			$.getJSON('/debug', function(json){
+				
+				$("#debug_data").empty();
+				$("#debug_data").append('<h3>orders:</h3>')
+				print(json.orders, 'id', 'status', 'total', 'email', 'full_name');				
+				$("#debug_data").append('<h3>payments:</h3>')
+				print(json.payments, 'id', 'status', 'amount');				
+				$("#debug_data").append('<h3>transactions:</h3>')
+				print(json.transactions, 'id', 'active', 'contact_email', 'contact_person', 'payment_id');				
+				$("#debug_data").append('<h3>sent_emails:</h3>')
+				print(json.sent_emails, 'recipient', 'subject', 'body');				
+			});
+			
+		});
+	});
+	
+</script>
 <body onload="document.forms[0].ts.value = new Date().getTime()">
 
-	<form action="/payment" method="POST">
-	
-		amount: <input name="amount" value="100"><br>
-		status: <input name="status" value="OK"><br>
-		payload: <textarea name="payload" rows="5" cols="60"></textarea><br>
-		ts: <input name="ts"><br>
-		secret: <input name="secret" value="15c84df6-bfa3-46c1-8929-a5dedaeab4a4"><br>
-		md5: <input name="md5"><button onclick="calculateMd5(); return false;">Calculate</button> <br>
+	<div style="max-width: 600px; float:left; padding: 20px;">
+		<form action="/payment" method="POST">
 		
-		<input type="submit" value="Send!">
-	</form>
-
+			amount: <input name="amount" value="100"><br>
+			status: <input name="status" value="OK"><br>
+			payload: <textarea name="payload" rows="5" cols="60"></textarea><br>
+			ts: <input name="ts"><br>
+			secret: <input name="secret" value="15c84df6-bfa3-46c1-8929-a5dedaeab4a4"><br>
+			md5: <input name="md5"><button onclick="calculateMd5(); return false;">Calculate</button> <br>
+			
+			<input type="submit" value="Send!">
+		</form>
+	</div>
+	<div style="max-width: 600px; float:left;padding: 20px;">
+		<button id="debug">Debug!</button>
+		<div id="debug_data"></div>
+	</div>
+	
 </body>
 </html>
