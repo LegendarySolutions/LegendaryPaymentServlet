@@ -1,10 +1,7 @@
-package pl.warsjawa.legacycode;
+package pl.warsjawa.legacycode.infra;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
-
-import pl.warsjawa.legacycode.infra.MailServer;
-import pl.warsjawa.legacycode.infra.SetupDB;
 
 public class EmbeddedServer {
     

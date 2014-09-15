@@ -1,4 +1,4 @@
-package pl.warsjawa.legacycode;
+package pl.warsjawa.legacycode.infra;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -18,13 +18,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import pl.warsjawa.legacycode.infra.MailServer;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.icegreen.greenmail.util.GreenMailUtil;
 
 public class DebugServlet extends HttpServlet {
+
+    public DebugServlet() throws ClassNotFoundException {
+        Class.forName("org.h2.Driver");
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -32,7 +34,6 @@ public class DebugServlet extends HttpServlet {
         Connection connection = null;
 
         try {
-
             connection = getConnection();
 
             Map<String, Object> json = new HashMap<>();

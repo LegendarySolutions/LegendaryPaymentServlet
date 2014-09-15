@@ -10,7 +10,7 @@
 
     <servlet>
         <servlet-name>DebugServlet</servlet-name>
-        <servlet-class>pl.warsjawa.legacycode.DebugServlet</servlet-class>
+        <servlet-class>pl.warsjawa.legacycode.infra.DebugServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
