@@ -3,6 +3,7 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'war'
 apply plugin: 'tomcat'
+apply plugin: 'pitest'
 
 ext {
     jettyVersion = '7.6.0.v20120127'
@@ -15,6 +16,7 @@ buildscript {
 
     dependencies {
         classpath 'org.gradle.api.plugins:gradle-tomcat-plugin:1.2.4'
+        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.0.0'
     }
 }
 
