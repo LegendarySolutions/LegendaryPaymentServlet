@@ -38,9 +38,9 @@ public class DebugServlet extends HttpServlet {
 
             Map<String, Object> json = new HashMap<>();
 
-            json.put("orders", executeQuery(connection, "select * from ORDERS"));
-            json.put("payments", executeQuery(connection, "select * from PAYMENT"));
-            json.put("transactions", executeQuery(connection, "select * from TRANSACTION"));
+            json.put("orders", executeQuery(connection, "select * from ORDERS order by ID asc"));
+            json.put("payments", executeQuery(connection, "select * from PAYMENT order by ID asc"));
+            json.put("transactions", executeQuery(connection, "select * from TRANSACTION order by ID asc"));
             json.put("sent_emails", extractEmails());
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
