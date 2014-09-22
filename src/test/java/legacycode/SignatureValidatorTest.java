@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PaymentServletTest {
+public class SignatureValidatorTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
