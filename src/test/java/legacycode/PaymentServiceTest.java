@@ -1,15 +1,17 @@
-package pl.warsjawa.legacycode;
+package legacycode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import legacycode.PaymentService;
+import legacycode.Transaction;
+import legacycode.infra.DB;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import pl.warsjawa.legacycode.infra.DB;
 
 @Ignore
 public class PaymentServiceTest {

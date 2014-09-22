@@ -1,4 +1,4 @@
-package pl.warsjawa.legacycode;
+package legacycode;
 
 import java.io.IOException;
 import java.math.BigInteger;

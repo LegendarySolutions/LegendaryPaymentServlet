@@ -1,12 +1,14 @@
-package pl.warsjawa.legacycode;
+package legacycode;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import legacycode.CustomerData;
+import legacycode.Order;
+import legacycode.SbsOrderDao;
+import legacycode.infra.DB;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import pl.warsjawa.legacycode.infra.DB;
 
 @Ignore
 public class SbsOrderDaoTest {

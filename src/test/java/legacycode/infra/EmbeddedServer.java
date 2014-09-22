@@ -1,4 +1,6 @@
-package pl.warsjawa.legacycode.infra;
+package legacycode.infra;
+
+import legacycode.infra.MailServer;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -44,7 +46,7 @@ public class EmbeddedServer {
     
     public static void main(String[] args) {
         
-//        SetupDB.main(args);
+        SetupDB.main(args);
         MailServer.main(args);
         
         EmbeddedServer server = new EmbeddedServer(Integer.valueOf(envOr("PORT", "8080")));

@@ -1,4 +1,4 @@
-package pl.warsjawa.legacycode.infra;
+package legacycode.infra;
 
 import java.io.IOException;
 import java.sql.Connection;

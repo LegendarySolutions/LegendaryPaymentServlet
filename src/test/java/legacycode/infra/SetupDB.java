@@ -1,4 +1,6 @@
-package pl.warsjawa.legacycode.infra;
+package legacycode.infra;
+
+import legacycode.infra.DB;
 
 
 /**

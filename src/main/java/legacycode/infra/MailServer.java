@@ -1,4 +1,4 @@
-package pl.warsjawa.legacycode.infra;
+package legacycode.infra;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,11 +1,11 @@
-package pl.warsjawa.legacycode;
+package legacycode;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import pl.warsjawa.legacycode.infra.DB;
+import legacycode.infra.DB;
 
 public class SbsOrderDao {
 

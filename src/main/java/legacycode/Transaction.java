@@ -1,4 +1,4 @@
-package pl.warsjawa.legacycode;
+package legacycode;
 
 public class Transaction {
     
