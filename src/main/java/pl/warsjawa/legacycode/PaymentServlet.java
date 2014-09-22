@@ -90,46 +90,57 @@ public class PaymentServlet extends HttpServlet{
         }
         
         if(isSBS){
-            
+
             SbsOrderDao sbsDao = SbsOrderDao.getInstance();
             Order order = sbsDao.findOrderById(orderId);
-            
+
             if(order == null || !"PENDING".equals(order.getStatus())){
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "No pending oder with id: " + orderId + "!");
                 return;
             }
-            
-            if(order.getTotalPrice() == Integer.parseInt(amount)){
-                
-                order.setStatus("PAID");
+
+            if (status.equals("CANCELLED") || status.equals("EXPIRED")) {
+                order.setStatus(status);
                 sbsDao.save(order);
 
                 String email = order.getCustomerData().getEmail();
-                
-                sendEmail(email, "Order #" + orderId + " has been successfully processed!", 
-                        "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n Thanks!");
 
-                
-            } else if(order.getTotalPrice() > Integer.parseInt(amount)) {
-                
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Not enough amount!");
-                return;
-                
-            } else {
-                
-                int surplus = Integer.parseInt(amount) - order.getTotalPrice();
-                order.setStatus("PAID");
-                sbsDao.save(order);
-                
-                // TODO: save surplus to customer account
+                sendEmail(email, "Order #" + orderId + " has been " + status + "!",
+                        "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been " + status + "!");
 
-                String email = order.getCustomerData().getEmail();
-                
-                sendEmail(email, "Order #" + orderId + " has been successfully processed!", 
-                        "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n"
-                      + "We have registered surplus of " + surplus + "USD on your account.\n Thanks!");
-                
-                sendEmail("admin@oursystem.com", "Order #" + orderId + " has surplus of " + surplus, "");
+            } else {    //OK
+                if (order.getTotalPrice() == Integer.parseInt(amount)) {
+
+                    order.setStatus("PAID");
+                    sbsDao.save(order);
+
+                    String email = order.getCustomerData().getEmail();
+
+                    sendEmail(email, "Order #" + orderId + " has been successfully processed!",
+                            "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n Thanks!");
+
+
+                } else if (order.getTotalPrice() > Integer.parseInt(amount)) {
+
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Not enough amount!");
+                    return;
+
+                } else {
+
+                    int surplus = Integer.parseInt(amount) - order.getTotalPrice();
+                    order.setStatus("PAID");
+                    sbsDao.save(order);
+
+                    // TODO: save surplus to customer account
+
+                    String email = order.getCustomerData().getEmail();
+
+                    sendEmail(email, "Order #" + orderId + " has been successfully processed!",
+                            "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n"
+                                    + "We have registered surplus of " + surplus + "USD on your account.\n Thanks!");
+
+                    sendEmail("admin@oursystem.com", "Order #" + orderId + " has surplus of " + surplus, "");
+                }
             }
             
         } else {
@@ -151,16 +162,33 @@ public class PaymentServlet extends HttpServlet{
                     return;
                 }
             }
-            
-            paymentService.setInactiveTransaction(transaction);
-            
-            Payment payment = paymentService.findPaymentById(transaction.getPaymentId());
-            payment.setState("COMPLETED");
-            paymentService.updatePayment(payment);
-            
-            sendEmail(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been successfully processed!", 
-                    "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been successfully processed!\n Thanks!");
-            
+
+            if ("OK".equals(status)) {
+
+                paymentService.setInactiveTransaction(transaction);
+
+                Payment payment = paymentService.findPaymentById(transaction.getPaymentId());
+                payment.setState("COMPLETED");
+                paymentService.updatePayment(payment);
+
+                sendEmail(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been successfully processed!",
+                        "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been successfully processed!\n Thanks!");
+            } else {
+
+                Payment payment = paymentService.findPaymentById(transaction.getPaymentId());
+                if ("COMPLETED".equals(payment.getState())) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal operation (" + status + ") for completed payment: " + orderId + "!");
+                    return;
+
+                } else {
+                    payment.setState("CANCELLED");
+                    paymentService.updatePayment(payment);
+
+                    sendEmail(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been cancelled!",
+                            "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been cancelled!");
+                }
+            }
+
         }
         
         resp.getOutputStream().print("OK");
