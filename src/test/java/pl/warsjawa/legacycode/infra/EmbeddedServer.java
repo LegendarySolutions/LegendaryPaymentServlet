@@ -44,7 +44,7 @@ public class EmbeddedServer {
     
     public static void main(String[] args) {
         
-        SetupDB.main(args);
+//        SetupDB.main(args);
         MailServer.main(args);
         
         EmbeddedServer server = new EmbeddedServer(Integer.valueOf(envOr("PORT", "8080")));

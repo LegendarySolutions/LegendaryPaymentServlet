@@ -1,10 +1,11 @@
 package pl.warsjawa.legacycode;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import pl.warsjawa.legacycode.infra.DB;
 
 public class SbsOrderDao {
 
@@ -75,7 +76,7 @@ public class SbsOrderDao {
     }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:h2:tcp://localhost:9092//tmp/payments", "prod", "topsecret");
+        return DB.getConnection();
     }
 
     public void save(Order order) {

@@ -1,15 +1,38 @@
 package pl.warsjawa.legacycode;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PaymentSerice {
+import pl.warsjawa.legacycode.infra.DB;
 
+public class PaymentService {
+
+    public PaymentService() {
+
+        Connection connection = null;
+        
+        try {
+            
+            connection = DB.getConnection();
+            connection.getAutoCommit();
+            
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(connection != null){
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+    
     public List<Transaction> findTransactionsByPaymentId(String paymentId) {
 
         Connection conn = null;
@@ -175,6 +198,6 @@ public class PaymentSerice {
     }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:h2:tcp://localhost:9092//tmp/payments", "prod", "topsecret");
+        return DB.getConnection();
     }
 }

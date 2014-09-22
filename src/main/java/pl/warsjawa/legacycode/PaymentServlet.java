@@ -15,7 +15,6 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,13 +24,10 @@ public class PaymentServlet extends HttpServlet{
 
     private static final String secret = "15c84df6-bfa3-46c1-8929-a5dedaeab4a4";
 
-    private PaymentSerice paymentService;
+    private PaymentService paymentService;
     
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        
-        super.init(config);
-        paymentService = new PaymentSerice();
+    public PaymentServlet() {
+        paymentService = new PaymentService();
     }
     
     @Override
