@@ -1,9 +1,6 @@
 package legacycode;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -22,14 +19,18 @@ import javax.servlet.http.HttpServletResponse;
 
 public class PaymentServlet extends HttpServlet{
 
-    private static final String secret = "15c84df6-bfa3-46c1-8929-a5dedaeab4a4";
-
     private PaymentService paymentService;
+    private SignatureValidator signatureValidator;
     
     public PaymentServlet() {
-        paymentService = new PaymentService();
+        this(new PaymentService(), new SignatureValidator());
     }
-    
+
+    public PaymentServlet(PaymentService paymentService, SignatureValidator signatureValidator) {
+        this.paymentService = paymentService;
+        this.signatureValidator = signatureValidator;
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -39,29 +40,19 @@ public class PaymentServlet extends HttpServlet{
         String timestamp = req.getParameter("ts");
         String md5 = req.getParameter("md5");           // md5(amount + status + payload + timestamp + secret)
     
+        handle(resp, amount, status, payload, timestamp, md5);
+    }
+
+    protected void handle(HttpServletResponse resp, String amount, String status, String payload, String timestamp, String md5)
+            throws IOException {
+       
         try {
             
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(amount.getBytes());
-            digest.update(status.getBytes());
-            digest.update(payload.getBytes());
-            digest.update(timestamp.getBytes());
-            digest.update(secret.getBytes());
+            signatureValidator.assertValidRequest(amount, status, payload, timestamp, md5);
             
-            String expectedMd5 = String.format("%x", new BigInteger(1, digest.digest()));
-            System.out.println("Expected MD5: " + expectedMd5);
+        } catch(Exception e){
             
-            if(!expectedMd5.equals(md5)){
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
-                return;
-            }
-            
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-
-        if(Math.abs(System.currentTimeMillis() - Long.valueOf(timestamp)) > 60000){
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Timestamp do not match!");
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         }
         
@@ -193,7 +184,7 @@ public class PaymentServlet extends HttpServlet{
         
         resp.getOutputStream().print("OK");
     }
-
+    
     private void sendEmail(String email, String subject, String body) {
         
         try {
