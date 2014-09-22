@@ -48,7 +48,7 @@ public class PaymentServlet extends HttpServlet{
             digest.update(timestamp.getBytes());
             digest.update(secret.getBytes());
             
-            String expectedMd5 = String.format("%032x", new BigInteger(1, digest.digest()));
+            String expectedMd5 = String.format("%x", new BigInteger(1, digest.digest()));
             System.out.println("Expected MD5: " + expectedMd5);
             
             if(!expectedMd5.equals(md5)){

@@ -13,3 +13,4 @@ build/
 bin/
 test-output
 #Other
+*.log

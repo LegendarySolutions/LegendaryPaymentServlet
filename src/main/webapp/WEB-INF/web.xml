@@ -5,12 +5,12 @@
 
     <servlet>
         <servlet-name>PaymentServlet</servlet-name>
-        <servlet-class>pl.warsjawa.legacycode.PaymentServlet</servlet-class>
+        <servlet-class>legacycode.PaymentServlet</servlet-class>
     </servlet>
 
     <servlet>
         <servlet-name>DebugServlet</servlet-name>
-        <servlet-class>pl.warsjawa.legacycode.infra.DebugServlet</servlet-class>
+        <servlet-class>legacycode.infra.DebugServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

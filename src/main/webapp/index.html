@@ -6,8 +6,9 @@
 
 	var calculateMd5 = function(){
 		
+		var secret = document.getElementById('secret').value;
 		var form = document.forms[0];
-		var text = form.amount.value + form.status.value + form.payload.value + form.ts.value + form.secret.value;
+		var text = form.amount.value + form.status.value + form.payload.value + form.ts.value + secret;
 		
 		console.log("Calculating MD5 for: '" +  text + "'");
 		form.md5.value = CryptoJS.MD5(text);
@@ -68,7 +69,7 @@
 			status: <input name="status" value="OK"><br>
 			payload: <textarea name="payload" rows="5" cols="60"></textarea><br>
 			ts: <input name="ts"><br>
-			secret: <input name="secret" value="15c84df6-bfa3-46c1-8929-a5dedaeab4a4"><br>
+			secret: <input id="secret" value="15c84df6-bfa3-46c1-8929-a5dedaeab4a4"><br>
 			md5: <input name="md5"><button onclick="calculateMd5(); return false;">Calculate</button> <br>
 			
 			<input type="submit" value="Send!">
