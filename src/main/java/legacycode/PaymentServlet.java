@@ -96,8 +96,7 @@ public class PaymentServlet extends HttpServlet{
 
                 String email = order.getCustomerData().getEmail();
 
-                sendEmail(email, "Order #" + orderId + " has been " + status + "!",
-                        "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been " + status + "!");
+                sendEmail(new Email(email, "Order #" + orderId + " has been " + status + "!", "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been " + status + "!"));
 
             } else {    //OK
                 if (order.getTotalPrice() == Integer.parseInt(amount)) {
@@ -107,8 +106,7 @@ public class PaymentServlet extends HttpServlet{
 
                     String email = order.getCustomerData().getEmail();
 
-                    sendEmail(email, "Order #" + orderId + " has been successfully processed!",
-                            "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n Thanks!");
+                    sendEmail(new Email(email, "Order #" + orderId + " has been successfully processed!", "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n Thanks!"));
 
 
                 } else if (order.getTotalPrice() > Integer.parseInt(amount)) {
@@ -126,11 +124,10 @@ public class PaymentServlet extends HttpServlet{
 
                     String email = order.getCustomerData().getEmail();
 
-                    sendEmail(email, "Order #" + orderId + " has been successfully processed!",
-                            "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n"
-                                    + "We have registered surplus of " + surplus + "USD on your account.\n Thanks!");
+                    sendEmail(new Email(email, "Order #" + orderId + " has been successfully processed!", "Hello " + order.getCustomerData().getFullName() + ",\n your payment for order #" + orderId + " has been successfully processed!\n"
+                            + "We have registered surplus of " + surplus + "USD on your account.\n Thanks!"));
 
-                    sendEmail("admin@oursystem.com", "Order #" + orderId + " has surplus of " + surplus, "");
+                    sendEmail(new Email("admin@oursystem.com", "Order #" + orderId + " has surplus of " + surplus, ""));
                 }
             }
             
@@ -162,8 +159,7 @@ public class PaymentServlet extends HttpServlet{
                 payment.setState("COMPLETED");
                 paymentService.updatePayment(payment);
 
-                sendEmail(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been successfully processed!",
-                        "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been successfully processed!\n Thanks!");
+                sendEmail(new Email(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been successfully processed!", "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been successfully processed!\n Thanks!"));
             } else {
 
                 Payment payment = paymentService.findPaymentById(transaction.getPaymentId());
@@ -175,25 +171,28 @@ public class PaymentServlet extends HttpServlet{
                     payment.setState("CANCELLED");
                     paymentService.updatePayment(payment);
 
-                    sendEmail(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been cancelled!",
-                            "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been cancelled!");
+                    sendEmail(new Email(transaction.getContactEmail(), "Payment #" + payment.getId() + " has been cancelled!", "Hello " + transaction.getContactPerson() + ",\n your payment #" + payment.getId() + " has been cancelled!"));
                 }
             }
 
         }
         
-        resp.getOutputStream().print("OK");
+        printResponse(resp, "OK");
+    }
+
+    protected void printResponse(HttpServletResponse resp, String text) throws IOException {
+        resp.getOutputStream().print(text);
     }
     
-    private void sendEmail(String email, String subject, String body) {
+    protected void sendEmail(Email mail) {
         
         try {
             
             Session session = Session.getInstance(new Properties());
             Message msg = new MimeMessage(session);
-            msg.setRecipient(RecipientType.TO, new InternetAddress(email));
-            msg.setSubject(subject);
-            msg.setText(body);
+            msg.setRecipient(RecipientType.TO, new InternetAddress(mail.getEmail()));
+            msg.setSubject(mail.getSubject());
+            msg.setText(mail.getBody());
             msg.saveChanges();
             Transport transport = session.getTransport("smtp");
             transport.connect("localhost", 9988, "", "");
