@@ -7,7 +7,7 @@
 
 ## Wymagania
 
-Projekt wymaga zainstalowanego lokalnie Java SDK najlepiej w wersji **8**.
+Projekt wymaga zainstalowanego lokalnie [Java SDK](http://www.oracle.com/technetwork/java/javase/downloads/) najlepiej w wersji **8**.
 
 
 ## Budowa projektu
