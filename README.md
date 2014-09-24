@@ -42,7 +42,7 @@ Import do IntelliJ Idea 12:
 
 i potem otworzenie pliku `*.ipr` przez `File->Open`
 
-**Uwaga** W przypadku korzystania z Idei w wariancie bezpłatnym (Community Edition) zalecana jest [wersja 14](http://confluence.jetbrains.com/display/IDEADEV/IDEA+14+EAP)
+**Uwaga**. W przypadku korzystania z Idei w wariancie bezpłatnym (Community Edition) zalecana jest [wersja 14](http://confluence.jetbrains.com/display/IDEADEV/IDEA+14+EAP)
 posiadająca wbudowane narzędzie do badania pokrycia kodu (w Idei 13 była ta funkcja dostępna była tylko w wersji Ultimate).
 
 #### Eclipse
@@ -55,11 +55,13 @@ Import do Eclipse:
 
 i potem `File -> Import -> Existing Project Into Workspace`
 
-**Uwaga** Ze względu na wykorzystanie Java 8 zalecaną wersją Eclipsa jest minimum [Luna (4.4)](https://www.eclipse.org/downloads/).
+**Uwaga**. Ze względu na wykorzystanie Java 8 zalecaną wersją Eclipsa jest minimum [Luna (4.4)](https://www.eclipse.org/downloads/).
 
 
-## Autorzy
+## O projekcie
 
-[Michał Piotrkowski](https://twitter.com/mpidev)
-[Marcin Zajączkowski](https://twitter.com/SolidSoftBlog)
+Strona projektu: https://github.com/szpak/LegendaryPaymentServlet
 
+Autorzy:
+ - [Michał Piotrkowski](https://twitter.com/mpidev)
+ - [Marcin Zajączkowski](https://twitter.com/SolidSoftBlog)
