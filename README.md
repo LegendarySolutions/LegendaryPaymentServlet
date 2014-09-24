@@ -2,7 +2,14 @@
 
 ## Projekt szkoleniowy do trenowania technik pracy z odziedziczonym kodem
 
-**TODO: Krótkie wprowadzenie**
+"Legendary Payment Servlet" rozwijany przez lata w firmie projekt do integracji wewnętrznych systemów z bramką płatności. Kod, który w podobnej postaci można prawdpopodobnie spotkać w bardzo wielu istniejących firmach. Celem warsztatu jest przećwiczenie pracy z odziedziczonym kodem w oparciu o algorytmem postępowania opisany w książce Micheal'a Feathersa ["Working Effectively with Legacy Code"](http://www.informit.com/store/working-effectively-with-legacy-code-9780131177055).
+
+Zadaniem uczestnika jest zaimplementowanie kilku prostych ficzerów starając się postępować zgodnie z algorytmem:
+ 1. Zidentyfikuj miejsce zmiany,
+ 2. Znajdź najodpowiedniejsze miejsca do przetestowania,
+ 3. Rozbij zależności, jeżeli to konieczne,
+ 4. Napisz testy (na dotychczasową i nową funkcjonalność),
+ 5. Dokonaj zmiany i zrefaktoryzuj.
 
 
 ## Wymagania
