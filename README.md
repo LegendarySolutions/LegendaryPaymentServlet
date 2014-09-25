@@ -67,7 +67,7 @@ i potem `File -> Import -> Existing Project Into Workspace`
 
 ## O projekcie
 
-Strona projektu: https://github.com/szpak/LegendaryPaymentServlet
+Strona projektu: https://github.com/LegendarySolutions/LegendaryPaymentServlet
 
 Autorzy:
  - [Michał Piotrkowski](https://twitter.com/mpidev)
