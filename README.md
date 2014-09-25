@@ -64,6 +64,9 @@ i potem `File -> Import -> Existing Project Into Workspace`
 
 **Uwaga**. Ze względu na wykorzystanie Java 8 zalecaną wersją Eclipsa jest minimum [Luna (4.4)](https://www.eclipse.org/downloads/).
 
+## Konfiguracja IDE
+
+Zalecana konfiguracja IDE (Idea i Eclipse) została opisana w pliku [IDE.md](IDE.md)
 
 ## O projekcie
 
