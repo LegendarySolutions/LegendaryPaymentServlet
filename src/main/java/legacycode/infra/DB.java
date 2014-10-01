@@ -1,5 +1,6 @@
 package legacycode.infra;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -12,8 +13,9 @@ import org.h2.tools.Server;
 
 public class DB {
 
+    private static String connectionUrl = String.format("jdbc:h2:tcp://localhost:9092/%s%spayments", System.getProperty("java.io.tmpdir"), File.separator);
+
     public static Connection getConnection() throws SQLException {
-        String connectionUrl = String.format("jdbc:h2:tcp://localhost:9092/%s/payments", System.getProperty("java.io.tmpdir"));
         return DriverManager.getConnection(connectionUrl, "prod", "topsecret");
     }
 
@@ -23,6 +25,7 @@ public class DB {
         
             Server.createTcpServer("-tcpAllowOthers").start();
             Server.createWebServer().start();
+            System.out.println("ConnectionUrl: " + connectionUrl);
             
         } catch (SQLException e) {
             throw new RuntimeException(e);
