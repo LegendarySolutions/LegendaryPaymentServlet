@@ -99,7 +99,7 @@ public class DebugServlet extends HttpServlet {
     }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:h2:tcp://localhost:9092//tmp/payments", "prod", "topsecret");
+        return DB.getConnection();
     }
 
 }

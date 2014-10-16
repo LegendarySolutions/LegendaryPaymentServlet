@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-// TODO: Weird o_O Tests pass if run separetely but fail if run together. Will fix this later, ignoring just for now...
+// TODO: Weird o_O Tests pass if run separately but fail if run together. Will fix this later, ignoring just for now... (2003-12-24)
 @Ignore   
 public class PaymentServiceTest {
 
