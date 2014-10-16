@@ -47,10 +47,9 @@ public class PaymentServlet extends HttpServlet{
             throws IOException {
        
         try {
-            
             signatureValidator.assertValidRequest(amount, status, payload, timestamp, md5);
             
-        } catch(Exception e){
+        } catch(IllegalArgumentException e){
             
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
