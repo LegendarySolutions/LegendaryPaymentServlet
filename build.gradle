@@ -41,7 +41,8 @@ dependencies {
     testCompile 'org.assertj:assertj-core:1.6.1'
     testCompile 'pl.pragmatists:JUnitParams:1.0.2'
     testCompile 'com.googlecode.catch-exception:catch-exception:1.2.0'
-
+	testCompile 'pl.wkr:fluent-exception-rule:1.0.1'
+	
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
 

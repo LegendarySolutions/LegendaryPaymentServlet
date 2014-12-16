@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.*;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,6 +17,7 @@ import legacycode.fixtures.TransactionFixture;
 import legacycode.validators.OrderValidator;
 import legacycode.validators.SignatureValidator;
 import legacycode.validators.TransactionValidator;
+import pl.wkr.fluentrule.api.FluentExpectedException;
 
 import static legacycode.payment.PaymentBuilder.aPayment;
 import static legacycode.transaction.TransactionBuilder.aTransaction;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 public class PaymentServletValidationTest {
 
     @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    public FluentExpectedException fluentEx = FluentExpectedException.none();
 	
 	@Mock
     private HttpServletResponse response;
@@ -123,11 +123,10 @@ public class PaymentServletValidationTest {
 		//given
 		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
-		thrown.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "100", "CANCELLED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
-		verify(response).getOutputStream().print("OK");
+		verify(response, only()).getOutputStream();
 	}
 	
 	@Test
@@ -135,11 +134,10 @@ public class PaymentServletValidationTest {
 		//given
 		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
-		thrown.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "100", "EXPIRED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
-		verify(response).getOutputStream().print("OK");
+		verify(response, only()).getOutputStream();
 	}
 	
 	@Test
@@ -147,11 +145,10 @@ public class PaymentServletValidationTest {
 		//given
 		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
-		thrown.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "101", "OK", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
-		verify(response).getOutputStream().print("OK");
+		verify(response, only()).getOutputStream();
 	}
 	
 	@Test
@@ -216,7 +213,8 @@ public class PaymentServletValidationTest {
 				.withAmount(1000)
 				.build());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
-		thrown.expect(RuntimeException.class);
+		// expect RuntimeException throwed by EMailService called for transaction
+		fluentEx.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "1000", "OK", "11111S", "100000", "5f142f02085b27c938897385782563f6");
 		//then
