@@ -130,7 +130,6 @@ public class PaymentServletValidationTest {
 		//when
 		sut.handle(response, "100", "CANCELLED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
-		verify(sut).cancelOrderOrMakeExpired(isA(Order.class), "CANCELLED");
 		verify(response).getOutputStream().print("OK");
 	}
 	
@@ -143,7 +142,6 @@ public class PaymentServletValidationTest {
 		//when
 		sut.handle(response, "100", "EXPIRED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
-		verify(sut).cancelOrderOrMakeExpired(isA(Order.class), "EXPIRED");
 		verify(response).getOutputStream().print("OK");
 	}
 	
@@ -199,6 +197,8 @@ public class PaymentServletValidationTest {
 				.withActive(true)
 				.withId("30000")
 				.withPaymentId("somePID")
+				.withContactEmail("xyz")
+				.withContactPerson("abc")
 				.build());
 		given(paymentService.findTransactionsByPaymentId("somePID")).willReturn(anyList());
 		given(paymentService.findPaymentById("somePID")).willReturn(aPayment()
@@ -207,6 +207,7 @@ public class PaymentServletValidationTest {
 				.withAmount(1000)
 				.build());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
+		thrown.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "1000", "OK", "11111S", "100000", "5f142f02085b27c938897385782563f6");
 		//then

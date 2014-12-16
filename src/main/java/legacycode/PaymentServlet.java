@@ -84,7 +84,7 @@ public class PaymentServlet extends HttpServlet {
 		resp.getOutputStream().print("OK");
 	}
 
-	protected void handleOrder(String orderId, String status, String amount) {
+	private void handleOrder(String orderId, String status, String amount) {
 		Order order = sbsDao.findOrderById(orderId);
 		if ("OK".equals(status)) {
 			makeOrderPaid(order, amount);
@@ -93,13 +93,13 @@ public class PaymentServlet extends HttpServlet {
 		}
 	}
 
-	protected void cancelOrderOrMakeExpired(Order order, String status) {
+	private void cancelOrderOrMakeExpired(Order order, String status) {
 		order.setStatus(status);
 		sbsDao.save(order);
 		emailService.cancelledOrExpiredOrderNotification(order, status);
 	}
 	
-	protected void makeOrderPaid(Order order, String amount) {
+	private void makeOrderPaid(Order order, String amount) {
 		final Integer requiredAmount = order.getTotalPrice();
 		final Integer incomingAmount = Integer.parseInt(amount);
 		
@@ -113,7 +113,7 @@ public class PaymentServlet extends HttpServlet {
 		}
 	}
 	
-	protected void handleTransaction(String orderId, String status, String amount) {
+	private void handleTransaction(String orderId, String status, String amount) {
 		Transaction transaction = paymentService.findTransactionById(orderId);
 		Payment payment = paymentService.findPaymentById(transaction.getPaymentId());
 		if ("OK".equals(status)) {
@@ -123,7 +123,7 @@ public class PaymentServlet extends HttpServlet {
 		}
 	}
 
-	protected void cancelTransaction(Transaction transaction, Payment payment, String status, String orderId) throws IllegalArgumentException {
+	private void cancelTransaction(Transaction transaction, Payment payment, String status, String orderId) throws IllegalArgumentException {
 		if ("COMPLETED".equals(payment.getState())) {
 			throw new IllegalArgumentException("Illegal operation (" + status + ") for completed payment: " + orderId + "!");
 		} else {
@@ -133,7 +133,7 @@ public class PaymentServlet extends HttpServlet {
 		}
 	}
 
-	protected void completeTransaction(Transaction transaction, Payment payment, String amount) {
+	private void completeTransaction(Transaction transaction, Payment payment, String amount) {
 		final Integer requiredAmount = payment.getAmount();
 		final Integer incomingAmount = Integer.parseInt(amount);
 		
