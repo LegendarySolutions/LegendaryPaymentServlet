@@ -2,6 +2,8 @@ package legacycode;
 
 import java.io.IOException;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.*;
@@ -11,6 +13,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.icegreen.greenmail.util.GreenMail;
+import com.icegreen.greenmail.util.GreenMailUtil;
+import com.icegreen.greenmail.util.ServerSetup;
 import legacycode.fixtures.DummyServletOutputStream;
 import legacycode.fixtures.OrderFixture;
 import legacycode.fixtures.TransactionFixture;
@@ -21,6 +26,7 @@ import pl.wkr.fluentrule.api.FluentExpectedException;
 
 import static legacycode.payment.PaymentBuilder.aPayment;
 import static legacycode.transaction.TransactionBuilder.aTransaction;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.anyList;
@@ -32,8 +38,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @RunWith(MockitoJUnitRunner.class)
 public class PaymentServletValidationTest {
 
-    @Rule
-    public FluentExpectedException fluentEx = FluentExpectedException.none();
+//    @Rule
+//    public FluentExpectedException fluentEx = FluentExpectedException.none();
 	
 	@Mock
     private HttpServletResponse response;
@@ -52,31 +58,19 @@ public class PaymentServletValidationTest {
 
     private PaymentServlet sut;
 	
-	//private static GreenMail greenMail;
+	private GreenMail greenMail;
 
-    @BeforeClass
-	public static void beforeClass() {
-//		try {
-//			greenMail = new GreenMail(new ServerSetup(9988, "127.0.0.1", ServerSetup.PROTOCOL_SMTP));
-//			greenMail.start();
-//		} catch (Exception ex) {
-//			System.out.println("OOPS");
-//		}
-	}
-	
-	@AfterClass
-	public static void afterClass() {
-		//greenMail.stop();
-	}
-	
-	@Before
+    @Before
     public void init() {
+		greenMail = new GreenMail(new ServerSetup(9988, "127.0.0.1", ServerSetup.PROTOCOL_SMTP));
+		greenMail.start();
         sut = new PaymentServlet(paymentService, signatureValidator, sbsOrderDao, orderValidator, transactionValidator, emailService);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(response);
+		greenMail.stop();
     }
 
     @Test
@@ -119,7 +113,7 @@ public class PaymentServletValidationTest {
 	}
 	
 	@Test
-	public void shouldCancelOrder() throws IOException, InterruptedException {
+	public void shouldCancelOrder() throws IOException, InterruptedException, MessagingException {
 		//given
 		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
@@ -127,10 +121,14 @@ public class PaymentServletValidationTest {
 		sut.handle(response, "100", "CANCELLED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
 		verify(response, only()).getOutputStream();
+		//and
+		assertThat(greenMail.waitForIncomingEmail(1)).as("One email received").isTrue();
+		MimeMessage firstMessage = greenMail.getReceivedMessages()[0];
+		assertThat(firstMessage.getSubject()).isEqualTo("Order #6666 has been CANCELLED!");
 	}
 	
 	@Test
-	public void shouldExpireOrder() throws IOException, InterruptedException {
+	public void shouldExpireOrder() throws IOException, InterruptedException, MessagingException {
 		//given
 		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
@@ -138,10 +136,14 @@ public class PaymentServletValidationTest {
 		sut.handle(response, "100", "EXPIRED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
 		verify(response, only()).getOutputStream();
+		//and
+		assertThat(greenMail.waitForIncomingEmail(1)).as("One email received").isTrue();
+		MimeMessage firstMessage = greenMail.getReceivedMessages()[0];
+		assertThat(firstMessage.getSubject()).isEqualTo("Order #6666 has been EXPIRED!");
 	}
 	
 	@Test
-	public void shouldCompleteOrder() throws IOException, InterruptedException {
+	public void shouldCompleteOrder() throws IOException, InterruptedException, MessagingException {
 		//given
 		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
@@ -149,6 +151,11 @@ public class PaymentServletValidationTest {
 		sut.handle(response, "101", "OK", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
 		verify(response, only()).getOutputStream();
+		//and
+		assertThat(greenMail.waitForIncomingEmail(1)).as("One email received").isTrue();
+		MimeMessage firstMessage = greenMail.getReceivedMessages()[0];
+		assertThat(firstMessage.getSubject()).isEqualTo("Order #6666 has been successfully processed!");
+		assertThat(GreenMailUtil.getBody(firstMessage)).contains("surplus");
 	}
 	
 	@Test
@@ -197,7 +204,7 @@ public class PaymentServletValidationTest {
 	}
 	
 	@Test
-	public void shouldCompleteValidTransaction() throws IOException {
+	public void shouldCompleteValidTransaction() throws IOException, InterruptedException, MessagingException {
 		//given
 		given(paymentService.findTransactionById(matches("\\d{5,7}S|K|G"))).willReturn(aTransaction()
 				.withActive(true)
@@ -213,12 +220,14 @@ public class PaymentServletValidationTest {
 				.withAmount(1000)
 				.build());
 		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
-		// expect RuntimeException throwed by EMailService called for transaction
-		fluentEx.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "1000", "OK", "11111S", "100000", "5f142f02085b27c938897385782563f6");
 		//then
 		verify(response, only()).getOutputStream();
+		//and
+		assertThat(greenMail.waitForIncomingEmail(1)).as("One email received").isTrue();
+		MimeMessage firstMessage = greenMail.getReceivedMessages()[0];
+		assertThat(firstMessage.getSubject()).isEqualTo("Payment #somePID has been successfully processed!");
 	}
 	
 	@Test
