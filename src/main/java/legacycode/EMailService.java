@@ -39,27 +39,10 @@ public class EMailService {
 	
 	public void cancelledOrExpiredOrderNotification(Order order, String status) {
 		try {
-			VelocityContext context = new VelocityContext();
-			context.put("orderId", order.getId());
-			context.put("status", status);
-			context.put("userName", order.getCustomerData().getFullName());
-
-			Template subjectTemplate = velocityEngine.getTemplate("templates/order-not-paid-subject.vm");
-			StringWriter subjectWriter = new StringWriter();
-			subjectTemplate.merge(context, subjectWriter);
+			VelocityContext context = getVelocityContext(order, 0, status);
+			final String subject = getOrderNotificationSubject(context, false);
+			final String body = getOrderNotificationBody(context, false);
 			
-			Template bodyTemplate = velocityEngine.getTemplate("templates/order-not-paid-body.vm");
-			StringWriter bodyWriter = new StringWriter();
-			bodyTemplate.merge(context, bodyWriter);
-			
-			System.out.println("SUBJECT:");
-			System.out.println(subjectWriter.toString());
-			System.out.println("BODY:");
-			System.out.println(bodyWriter.toString());
-
-			final String subject = subjectWriter.toString();
-			final String body = bodyWriter.toString();
-
 			sendEmail(order.getCustomerData().getEmail(), subject, body);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -68,36 +51,54 @@ public class EMailService {
 
 	public void paidOrderNotification(Order order, int surplus) {
 		try {
-			VelocityContext context = new VelocityContext();
-			context.put("orderId", order.getId());
-			context.put("userName", order.getCustomerData().getFullName());
-			context.put("surplus", surplus);
-			
-			Template subjectTemplate = velocityEngine.getTemplate("templates/order-paid-subject.vm");
-			StringWriter subjectWriter = new StringWriter();
-			subjectTemplate.merge(context, subjectWriter);
-			
-			Template bodyTemplate = velocityEngine.getTemplate("templates/order-paid-body.vm");
-			StringWriter bodyWriter = new StringWriter();
-			bodyTemplate.merge(context, bodyWriter);
-			
-			System.out.println("SUBJECT:");
-			System.out.println(subjectWriter.toString());
-			System.out.println("BODY:");
-			System.out.println(bodyWriter.toString());
-
-			final String subject = subjectWriter.toString();
-			final String body = bodyWriter.toString();
+			VelocityContext context = getVelocityContext(order, surplus, null);
+			final String subject = getOrderNotificationSubject(context, true);
+			final String body = getOrderNotificationBody(context, true);
 			
 			sendEmail(order.getCustomerData().getEmail(), subject, body);
 			
 			if (surplus > 0) {
 				sendEmail("admin@oursystem.com", "Order #" + order.getId() + " has surplus of " + surplus, "");
 			}
-			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	private String getOrderNotificationSubject(VelocityContext context, boolean isPaid) throws Exception {
+		Template subjectTemplate = null;
+		if (isPaid) {
+			subjectTemplate = velocityEngine.getTemplate("templates/order-paid-subject.vm");
+		} else {
+			subjectTemplate = velocityEngine.getTemplate("templates/order-not-paid-subject.vm");
+		}
+		StringWriter subjectWriter = new StringWriter();
+		subjectTemplate.merge(context, subjectWriter);
+		
+		return subjectWriter.toString();
+	}
+	
+	private String getOrderNotificationBody(VelocityContext context, boolean isPaid) throws Exception {
+		Template bodyTemplate = null;
+		if (isPaid) {
+			bodyTemplate = velocityEngine.getTemplate("templates/order-paid-body.vm");
+		} else {
+			bodyTemplate = velocityEngine.getTemplate("templates/order-not-paid-body.vm");
+		}
+		StringWriter bodyWriter = new StringWriter();
+		bodyTemplate.merge(context, bodyWriter);
+		
+		return bodyWriter.toString();
+	}
+
+	private VelocityContext getVelocityContext(Order order, int surplus, String status) {
+		VelocityContext context = new VelocityContext();
+		context.put("orderId", order.getId());
+		context.put("userName", order.getCustomerData().getFullName());
+		context.put("surplus", surplus);
+		context.put("status", status);
+		
+		return context;
 	}
 	
 	public void cancelledTransactionNotification(Transaction transaction, Payment payment) {
@@ -131,6 +132,10 @@ public class EMailService {
 	}
 
 	private void sendEmail(String address, String subject, String body) {
+		System.out.println("SUBJECT:");
+		System.out.println(subject);
+		System.out.println("BODY:");
+		System.out.println(body);
 		try {
 			Session session = Session.getInstance(new Properties());
 			Message msg = new MimeMessage(session);

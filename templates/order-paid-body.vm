@@ -1,6 +1,6 @@
 Hello $userName,
 your payment for order #$orderId has been successfully processed!
-#if ($surplus > 1)
+#if ($surplus > 0)
 We have registered surplus of $surplus USD on your account.
 #end
 Thanks!

@@ -28,7 +28,7 @@ public class OrderFixture {
 	}
 	
 	public static Order pendingWithCustomerData() {
-		return anOrder().withId("6666").withStatus("PENDING").withCustomerData(new CustomerData("abc", "xyz")).build();
+		return anOrder().withTotalPrice(100).withId("6666").withStatus("PENDING").withCustomerData(new CustomerData("abc", "xyz")).build();
 	}
 	
 	public static Order cancelledOrder() {

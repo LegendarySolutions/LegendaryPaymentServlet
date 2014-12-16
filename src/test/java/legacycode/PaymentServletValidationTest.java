@@ -12,11 +12,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.icegreen.greenmail.util.GreenMail;
 import legacycode.fixtures.DummyServletOutputStream;
 import legacycode.fixtures.OrderFixture;
 import legacycode.fixtures.TransactionFixture;
-import legacycode.order.Order;
 import legacycode.validators.OrderValidator;
 import legacycode.validators.SignatureValidator;
 import legacycode.validators.TransactionValidator;
@@ -26,7 +24,6 @@ import static legacycode.transaction.TransactionBuilder.aTransaction;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
@@ -141,6 +138,18 @@ public class PaymentServletValidationTest {
 		thrown.expect(RuntimeException.class);
 		//when
 		sut.handle(response, "100", "EXPIRED", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
+		//then
+		verify(response).getOutputStream().print("OK");
+	}
+	
+	@Test
+	public void shouldCompleteOrder() throws IOException, InterruptedException {
+		//given
+		given(sbsOrderDao.findOrderById(matches("\\d{4}"))).willReturn(OrderFixture.pendingWithCustomerData());
+		given(response.getOutputStream()).willReturn(new DummyServletOutputStream());
+		thrown.expect(RuntimeException.class);
+		//when
+		sut.handle(response, "101", "OK", "order_id:6666", "100000", "5f142f02085b27c938897385782563f6");
 		//then
 		verify(response).getOutputStream().print("OK");
 	}
