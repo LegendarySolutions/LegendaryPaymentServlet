@@ -1,5 +1,6 @@
 package legacycode;
 
+import java.io.StringWriter;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -8,7 +9,12 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import legacycode.customerdata.CustomerData;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.log.NullLogChute;
+
 import legacycode.order.Order;
 import legacycode.payment.Payment;
 import legacycode.transaction.Transaction;
@@ -18,39 +24,82 @@ import legacycode.transaction.Transaction;
  * @author mcendrowicz
  */
 public class EMailService {
-
+	
+	private static final VelocityEngine velocityEngine = new VelocityEngine();
+	
+	static {
+		try {
+			Properties velocityProperties = new Properties();
+			velocityProperties.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS, NullLogChute.class.getName());
+			velocityEngine.init(velocityProperties);
+		} catch (Exception ex) {
+			throw new ExceptionInInitializerError(ex);
+		}
+	}
+	
 	public void cancelledOrExpiredOrderNotification(Order order, String status) {
-		final String orderId = order.getId();
-		final CustomerData customerData = order.getCustomerData();
-		StringBuilder subject = new StringBuilder();
-		subject.append("Order #").append(orderId).append(" has been ").append(status).append("!");
+		try {
+			VelocityContext context = new VelocityContext();
+			context.put("orderId", order.getId());
+			context.put("status", status);
+			context.put("userName", order.getCustomerData().getFullName());
 
-		StringBuilder body = new StringBuilder();
-		body.append("Hello ").append(customerData.getFullName()).append(",\n");
-		body.append("your payment for order #").append(orderId).append(" has been ").append(status).append("!");
+			Template subjectTemplate = velocityEngine.getTemplate("templates/order-not-paid-subject.vm");
+			StringWriter subjectWriter = new StringWriter();
+			subjectTemplate.merge(context, subjectWriter);
+			
+			Template bodyTemplate = velocityEngine.getTemplate("templates/order-not-paid-body.vm");
+			StringWriter bodyWriter = new StringWriter();
+			bodyTemplate.merge(context, bodyWriter);
+			
+			System.out.println("SUBJECT:");
+			System.out.println(subjectWriter.toString());
+			System.out.println("BODY:");
+			System.out.println(bodyWriter.toString());
 
-		sendEmail(customerData.getEmail(), subject.toString(), body.toString());
+			final String subject = subjectWriter.toString();
+			final String body = bodyWriter.toString();
+
+			sendEmail(order.getCustomerData().getEmail(), subject, body);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	public void paidOrderNotification(Order order, int surplus) {
-		final String orderId = order.getId();
-		final CustomerData customerData = order.getCustomerData();
-		StringBuilder subject = new StringBuilder();
-		subject.append("Order #").append(orderId).append(" has been successfully processed!");
+		try {
+			VelocityContext context = new VelocityContext();
+			context.put("orderId", order.getId());
+			context.put("userName", order.getCustomerData().getFullName());
+			context.put("surplus", surplus);
+			
+			Template subjectTemplate = velocityEngine.getTemplate("templates/order-paid-subject.vm");
+			StringWriter subjectWriter = new StringWriter();
+			subjectTemplate.merge(context, subjectWriter);
+			
+			Template bodyTemplate = velocityEngine.getTemplate("templates/order-paid-body.vm");
+			StringWriter bodyWriter = new StringWriter();
+			bodyTemplate.merge(context, bodyWriter);
+			
+			System.out.println("SUBJECT:");
+			System.out.println(subjectWriter.toString());
+			System.out.println("BODY:");
+			System.out.println(bodyWriter.toString());
 
-		StringBuilder body = new StringBuilder();
-		body.append("Hello ").append(customerData.getFullName()).append(",\n");
-		body.append("your payment for order #").append(orderId).append(" has been successfully processed!").append("\n");
-
-		if (surplus > 0) {
-			body.append("We have registered surplus of ").append(surplus).append("USD on your account.").append("\n");
-			sendEmail("admin@oursystem.com", "Order #" + orderId + " has surplus of " + surplus, "");
+			final String subject = subjectWriter.toString();
+			final String body = bodyWriter.toString();
+			
+			sendEmail(order.getCustomerData().getEmail(), subject, body);
+			
+			if (surplus > 0) {
+				sendEmail("admin@oursystem.com", "Order #" + order.getId() + " has surplus of " + surplus, "");
+			}
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
-		body.append("Thanks!");
-
-		sendEmail(customerData.getEmail(), subject.toString(), body.toString());
 	}
-
+	
 	public void cancelledTransactionNotification(Transaction transaction, Payment payment) {
 		final String paymentId = payment.getId();
 		final String contactEmail = transaction.getContactEmail();
