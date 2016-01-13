@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import legacycode.infra.DB;
+import legacycode.payment.Payment;
+import legacycode.transaction.Transaction;
 
 public class PaymentService {
 

@@ -34,13 +34,15 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'commons-codec:commons-codec:1.4'
     compile 'com.google.guava:guava:18.0'
+	compile 'org.apache.velocity:velocity:1.6.2'
 
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-core:1.9.5'
     testCompile 'org.assertj:assertj-core:1.6.1'
     testCompile 'pl.pragmatists:JUnitParams:1.0.2'
     testCompile 'com.googlecode.catch-exception:catch-exception:1.2.0'
-
+	testCompile 'pl.wkr:fluent-exception-rule:1.0.1'
+	
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
 

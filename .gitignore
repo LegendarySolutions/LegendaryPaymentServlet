@@ -15,3 +15,4 @@ test-output
 #Other
 *.log
 *~
+/.nb-gradle/private/
