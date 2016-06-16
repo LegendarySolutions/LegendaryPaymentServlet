@@ -39,15 +39,7 @@ Windows:
 
 #### IntelliJ Idea
 
-Import do IntelliJ Idea 13+: `File -> Import Project.`
-
-Import do IntelliJ Idea 12:
-
-    ./gradlew idea
-
-(`gradle.bat` na platformie Windows)
-
-i potem otworzenie pliku `*.ipr` przez `File->Open`
+Import do IntelliJ Idea 13+: `File -> Import Project.` i wskazać plik `build.gradle`.
 
 **Uwaga**. W przypadku korzystania z Idei w wariancie bezpłatnym (Community Edition) zalecana jest [wersja 14](http://confluence.jetbrains.com/display/IDEADEV/IDEA+14+EAP)
 posiadająca wbudowane narzędzie do badania pokrycia kodu (w Idei 13 była ta funkcja dostępna była tylko w wersji Ultimate).
