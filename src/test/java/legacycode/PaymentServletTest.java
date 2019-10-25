@@ -32,12 +32,12 @@ public class PaymentServletTest implements WithAssertions, WithBDDMockito {
 
     @Before
     public void setup() {
-        paymentServlet = new PaymentServlet(paymentService) {
+        paymentServlet = new PaymentServlet(paymentService, new RequestValidator() {
             @Override
             protected long currentTime() {
                 return 100_001L;
             }
-        };
+        });
     }
 
     @Test
