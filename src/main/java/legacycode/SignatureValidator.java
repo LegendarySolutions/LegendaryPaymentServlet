@@ -22,7 +22,7 @@ public class SignatureValidator implements Serializable {
             System.out.println("Expected MD5: " + expectedMd5);
 
             if (!expectedMd5.equals(md5)) {
-                throw new ValidationException2("MD5 signature do not match!");
+                throw new ValidationException("MD5 signature do not match!");
             }
 
         } catch (NoSuchAlgorithmException e) {
@@ -30,7 +30,7 @@ public class SignatureValidator implements Serializable {
         }
 
         if (Math.abs(currentTime() - Long.valueOf(timestamp)) > 60000) {
-            throw new ValidationException2("Timestamp do not match!");
+            throw new ValidationException("Timestamp do not match!");
         }
     }
 

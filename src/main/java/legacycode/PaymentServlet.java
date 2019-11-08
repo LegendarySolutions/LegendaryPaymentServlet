@@ -49,7 +49,7 @@ public class PaymentServlet extends HttpServlet{
     void process(HttpServletResponse resp, String amount, String status, String payload, String timestamp, String md5) throws IOException {
         try {
             signatureValidator.validate(amount, status, payload, timestamp, md5);
-        } catch(ValidationException2 e) {
+        } catch(ValidationException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         }
