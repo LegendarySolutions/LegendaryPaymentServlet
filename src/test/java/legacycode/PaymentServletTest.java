@@ -1,6 +1,7 @@
 package legacycode;
 
 import org.assertj.core.api.WithAssertions;
+import org.h2.jdbc.JdbcSQLException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,7 +28,7 @@ public class PaymentServletTest implements WithAssertions {
     private PaymentService paymentService;
     private PaymentServlet paymentServlet;
 
-    private long currentTime = 1_000_001;;
+    private long currentTime = 100_001;
 
     @Before
     public void init() {
@@ -63,20 +64,21 @@ public class PaymentServletTest implements WithAssertions {
     @Test
     public void should3() throws IOException {
         //when
-        paymentServlet.process(response, "", "", "", "1000000", "cfd1b42a1306944e98a49f1ecb7b38e");
+        paymentServlet.process(response, "", "", "", "100000", "5f142f02085b27c938897385782563f6");
         //then
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Unrecognized format of payload!");
     }
 
-    @Test
-    public void shouldReproduceBugWithMd5() throws IOException {
+    @Test   //https://github.com/LegendarySolutions/LegendaryPaymentServlet/issues/1
+    public void shouldPreserveLeadingZeros() throws IOException {
         //given
-        //POST http://legacy-solutions.com/api/payments HTTP/1.1 403
-        //amount=10000&status=OK&payload=order_id%3A6792&ts=1411677303294&md5=0c672178b3ce4ddc5404833b94cf5982
         currentTime = 1411677303290L;
         //when
-        paymentServlet.process(response, "10000", "OK", "order_id:6792", "1411677303294", "0c672178b3ce4ddc5404833b94cf5982");
+        Throwable thrown = catchThrowable(() -> paymentServlet.process(response, "10000", "OK", "order_id:6792", "1411677303294", "0c672178b3ce4ddc5404833b94cf5982"));
         //then
-        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
+        assertThat(thrown)
+                .isInstanceOf(RuntimeException.class)
+                .hasCauseInstanceOf(JdbcSQLException.class)
+                .hasMessageContaining("[90067-190]");
     }
 }
