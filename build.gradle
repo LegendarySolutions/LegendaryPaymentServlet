@@ -15,7 +15,7 @@ buildscript {
 
     dependencies {
         classpath 'org.gradle.api.plugins:gradle-tomcat-plugin:1.2.4'
-        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.1.6'
+        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.4.0'
     }
 }
 
@@ -35,11 +35,11 @@ dependencies {
     compile 'com.google.guava:guava:19.0'
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.2.13'
-    testCompile 'info.solidsoft.mockito:mockito-java8:2.0.0'
-    testCompile 'org.assertj:assertj-core:3.5.2'
+    testCompile 'org.mockito:mockito-core:2.28.2'
+    testCompile 'info.solidsoft.mockito:mockito-java8:2.5.0'
+    testCompile 'org.assertj:assertj-core:3.14.0'
     testCompile 'pl.pragmatists:JUnitParams:1.0.4'
-    testCompile 'ch.qos.logback:logback-classic:1.1.7'
+    testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
