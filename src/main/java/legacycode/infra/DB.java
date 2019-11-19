@@ -13,7 +13,9 @@ import org.h2.tools.Server;
 
 public class DB {
 
-    private static String connectionUrl = String.format("jdbc:h2:tcp://localhost:9092/%s%spayments", System.getProperty("java.io.tmpdir"), File.separator);
+    private static final String DB_PORT = "9092";
+
+    private static String connectionUrl = String.format("jdbc:h2:tcp://localhost:%s/%s%spayments", DB_PORT, System.getProperty("java.io.tmpdir"), File.separator);
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionUrl, "prod", "topsecret");
@@ -23,7 +25,7 @@ public class DB {
 
         try {
         
-            Server.createTcpServer("-tcpAllowOthers").start();
+            Server.createTcpServer("-tcpAllowOthers", "-tcpPort" , DB_PORT).start();
             Server.createWebServer().start();
             System.out.println("ConnectionUrl: " + connectionUrl);
             
