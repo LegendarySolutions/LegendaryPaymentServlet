@@ -54,10 +54,6 @@ dependencies {
 
 sourceCompatibility = 1.8
 
-task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
-    gradleVersion = '1.12'
-}
-
 pitest {
     timestampedReports = false
 }
