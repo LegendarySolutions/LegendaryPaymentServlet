@@ -1,6 +1,7 @@
 package legacycode;
 
 import org.assertj.core.api.WithAssertions;
+import org.h2.jdbc.JdbcSQLException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,16 +71,17 @@ public class PaymentServletTest implements WithAssertions {
     }
 
     @Test   //https://github.com/LegendarySolutions/LegendaryPaymentServlet/issues/1
-    public void shouldReproduceBugWithMd5() throws IOException {
+    public void shouldKeepLeadingZerosInMd5() {
         //given
-        //POST http://legacy-solutions.com/api/payments HTTP/1.1 403
-        //amount=10000&status=OK&payload=order_id%3A6792&ts=1411677303294&md5=0c672178b3ce4ddc5404833b94cf5982
         currentTime = 1411677303293L;
         //when
-        paymentServlet.process(response, "10000", "OK", "order_id:6792", "1411677303294",
-                "0c672178b3ce4ddc5404833b94cf5982");
+        Throwable thrown = catchThrowable(() -> paymentServlet.process(response, "10000", "OK", "order_id:6792", "1411677303294",
+                "0c672178b3ce4ddc5404833b94cf5982"));
         //then
-        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
+        assertThat(thrown)
+                .isInstanceOf(RuntimeException.class)
+                .hasCauseInstanceOf(JdbcSQLException.class)
+                .hasMessageContaining("[90067-190]");
     }
 }
 
