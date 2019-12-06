@@ -11,6 +11,7 @@ import org.mockito.junit.MockitoRule;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.ConnectException;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -68,16 +69,15 @@ public class PaymentServletTest implements WithAssertions {
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Unrecognized format of payload!");
     }
 
-    @Test
-    public void shouldReproduceProblemWithMd5() throws IOException {
+    @Test   //https://github.com/LegendarySolutions/LegendaryPaymentServlet/issues/1
+    public void shouldPreserveLeadingZerosInMd5Signature() {
         //given
-        //POST http://legacy-solutions.com/api/payments HTTP/1.1 403
-        //amount=10000&status=OK&payload=order_id%3A6792&ts=1411677303294&md5=0c672178b3ce4ddc5404833b94cf5982
         currentTime = 1411677303295L;
-        //when
-        paymentServlet.process(response, "10000", "OK", "order_id:6792", "1411677303294",
-                "0c672178b3ce4ddc5404833b94cf5982");
-        //then
-        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
+        //expect
+        assertThatExceptionOfType(RuntimeException.class).isThrownBy(() ->
+                paymentServlet.process(response, "10000", "OK", "order_id:6792", "1411677303294",
+                        "0c672178b3ce4ddc5404833b94cf5982"))
+                .withRootCauseInstanceOf(ConnectException.class)
+                .withMessageContaining("[90067-190]");
     }
 }
