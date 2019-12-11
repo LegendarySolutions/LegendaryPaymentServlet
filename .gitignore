@@ -6,6 +6,10 @@ build/
 *.iml
 *.ipr
 *.iws
+out/
+#Not needed in Idea 2019.3+ with JetBrains JRE- https://youtrack.jetbrains.com/issue/IDEA-202129
+#Fixed upstream in Java 12 b23 - https://bugs.openjdk.java.net/browse/JDK-8214300
+.attach_pid*
 #Eclipse
 .classpath
 .project
