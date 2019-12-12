@@ -69,7 +69,7 @@ public class PaymentServlet extends HttpServlet{
             throw new RuntimeException(e);
         }
 
-        if(Math.abs(System.currentTimeMillis() - Long.valueOf(timestamp)) > 60000){
+        if(Math.abs(currentTime() - Long.valueOf(timestamp)) > 60000){
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Timestamp do not match!");
             return;
         }
@@ -203,6 +203,10 @@ public class PaymentServlet extends HttpServlet{
         }
 
         resp.getOutputStream().print("OK");
+    }
+
+    protected long currentTime() {
+        return System.currentTimeMillis();
     }
 
     private void sendEmail(String email, String subject, String body) {

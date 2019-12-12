@@ -1,6 +1,7 @@
 package legacycode;
 
 import org.assertj.core.api.WithAssertions;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -21,16 +22,43 @@ public class PaymentServletTest implements WithAssertions {
     private PaymentService paymentService;
     @Mock
     private HttpServletResponse response;
+    private PaymentServlet paymentServlet;
+
+    @Before
+    public void init() {
+        paymentServlet = new PaymentServlet(paymentService) {
+            @Override
+            protected long currentTime() {
+                return 100000;
+            }
+        };
+    }
 
     @Test
     public void should1() throws IOException {
-        //given
-        PaymentServlet paymentServlet = new PaymentServlet(paymentService);
         //when
         paymentServlet.process(response, "", "", "", "", "");
         //then
         verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
     }
+
+    @Test
+    public void should2() throws IOException {
+        //when
+        paymentServlet.process(response, "", "", "", "10000", "2d9f2cff82ca49088bc4629bb288dd51");
+        //then
+        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "Timestamp do not match!");
+    }
+
+    @Test
+    public void should3() throws IOException {
+        //when
+        paymentServlet.process(response, "", "", "", "100001", "2303ad9f2ef11e722cfa7da72308803c");
+        //then
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Unrecognized format of payload!");
+    }
+
+
 }
 
 
