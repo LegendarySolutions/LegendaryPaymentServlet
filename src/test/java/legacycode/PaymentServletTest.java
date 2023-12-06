@@ -31,12 +31,12 @@ public class PaymentServletTest implements WithAssertions {
 
     @Before
     public void init() {
-        paymentServlet = new PaymentServlet(paymentService) {
+        paymentServlet = new PaymentServlet(paymentService, new SignatureValidator() {
             @Override
             protected long currentTime() {
                 return currentTime;
             }
-        };
+        });
     }
 
     @After
