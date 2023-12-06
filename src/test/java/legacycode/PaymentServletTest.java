@@ -12,6 +12,7 @@ import org.mockito.junit.MockitoRule;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.ConnectException;
 
 import static org.mockito.Mockito.verify;
 
@@ -78,17 +79,18 @@ public class PaymentServletTest implements WithAssertions {
     }
 
     @Test   //https://github.com/LegendarySolutions/LegendaryPaymentServlet/issues/1
-    public void shouldReproduceProblemWithMd5() throws IOException {
+    public void shouldKeepZeroPaddingInMd5() {
         //given
         currentTime = 1411677303293L;
         //POST http://legacy-solutions.com/api/payments HTTP/1.1 403
         //amount=10000&status=OK&payload=order_id%3A6792&ts=1411677303294&md5=0c672178b3ce4ddc5404833b94cf5982
         //when
-        paymentServlet.process(response, "10000", "OK", "order_id:6792",
-                "1411677303294", "0c672178b3ce4ddc5404833b94cf5982");
+        Throwable thrown = catchThrowable(() -> paymentServlet.process(response, "10000", "OK", "order_id:6792",
+                "1411677303294", "0c672178b3ce4ddc5404833b94cf5982"));
         //then
-        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN, "MD5 signature do not match!");
+        assertThat(thrown).isExactlyInstanceOf(RuntimeException.class)
+                .hasRootCauseInstanceOf(ConnectException.class)
+                .hasMessageContaining("[90067-190]");
     }
-
 
 }
